@@ -1,0 +1,16 @@
+<mat-toolbar>Basics</mat-toolbar>
+<ng-container *ngIf="service.track$ | async as track">
+  <audio-player [track]="track"
+                [progress]="service.progress"
+                [duration]="service.duration"
+                [playing]="service.playing"
+                [muted]="service.muted"
+                [gain]="service.gain"
+                (initialized)="initializeAudio($event)"
+                (scan)="service.scanTrack($event)"
+                (togglePlay)="service.togglePlayback()"
+                (toggleMute)="service.toggleMute()"
+                (previous)="service.previousTrack()"
+                (next)="service.nextTrack()"
+                (volume)="service.updateVolume($event)"></audio-player>
+</ng-container>

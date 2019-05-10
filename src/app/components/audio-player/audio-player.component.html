@@ -1,0 +1,67 @@
+<audio #player></audio>
+<section class="background card container"
+         [class.static-elevation]="elevated"
+         [style.width.px]="width">
+  <p class="mat-title">{{track.name}}</p>
+  <section class="container"
+           fxLayout="column"
+           fxLayoutAlign="center center">
+    <img [src]="track.img"
+         [alt]="track.img"
+         [width]="imgWidth">
+  </section>
+  <section fxLayout="row"
+           fxLayout="start center">
+    <p>{{progress | tracktime}}</p>
+    <mat-slider [(value)]="progress"
+                [min]="0"
+                [max]="duration"
+                [step]=".1"
+                (input)="scanTrack($event)"
+                fxFlex></mat-slider>
+    <p>{{duration | tracktime}}</p>
+  </section>
+  <section fxLayout="row"
+           fxLayoutAlign="space-around center">
+    <p class="mat-body-strong">{{track.artist}}</p>
+    <p class="mat-body-strong">{{track.album}}</p>
+  </section>
+  <mat-divider></mat-divider>
+  <section class="container"
+           fxLayout="row"
+           fxLayoutAlign="space-evenly center">
+    <button mat-icon-button
+            matTooltip="Previous"
+            (click)="previous.emit()">
+      <mat-icon>skip_previous</mat-icon>
+    </button>
+    <button mat-icon-button
+            [matTooltip]="playing ? 'Pause' : 'Play'"
+            (click)="togglePlay.emit()">
+      <mat-icon *ngIf="playing">pause</mat-icon>
+      <mat-icon *ngIf="!(playing)">play_arrow</mat-icon>
+    </button>
+    <button mat-icon-button
+            matTooltip="Next"
+            (click)="next.emit()">
+      <mat-icon>skip_next</mat-icon>
+    </button>
+  </section>
+  <mat-divider></mat-divider>
+  <section class="container"
+           fxLayout="row"
+           fxLayoutAlign="start center">
+    <button mat-icon-button
+            [matTooltip]="muted ? 'Unmute' : 'Mute'"
+            (click)="toggleMute.emit()">
+      <mat-icon *ngIf="muted">volume_off</mat-icon>
+      <mat-icon *ngIf="!(muted)">volume_up</mat-icon>
+    </button>
+    <mat-slider fxFlex
+                [max]="3"
+                [min]="0"
+                [step]=".01"
+                [value]="gain"
+                (input)="updateVolume($event)"></mat-slider>
+  </section>
+</section>
