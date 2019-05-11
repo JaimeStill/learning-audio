@@ -7,8 +7,11 @@ export class AudioService {
   private imageSource = '../assets/images/';
   private audioSource = '../assets/audio/';
 
-  frequencyData: Uint8Array;
-  timeDomainData: Uint8Array;
+  bufferLength: number;
+  floatTimeDomainData: Float32Array;
+  floatFrequencyData: Float32Array;
+  byteFrequencyData: Uint8Array;
+  byteTimeDomainData: Uint8Array;
   audio: HTMLAudioElement;
   context: AudioContext;
   audioNode: AudioNode;
@@ -81,12 +84,7 @@ export class AudioService {
     this.audio.src = this.track.value.src;
     this.audio.addEventListener('durationchange', () => this.duration = this.audio.duration);
     this.audio.addEventListener('ended', () => this.nextTrack());
-
-    this.audio.addEventListener('timeupdate', () => {
-      this.progress = this.audio.currentTime;
-      this.analyser.getByteTimeDomainData(this.timeDomainData);
-      this.analyser.getByteFrequencyData(this.frequencyData);
-    });
+    this.audio.addEventListener('timeupdate', () => this.progress = this.audio.currentTime);
   }
 
   private setupContextAndNodes = () => {
@@ -104,10 +102,24 @@ export class AudioService {
 
   private setupAnalyserSources = () => {
     this.analyser.fftSize = 2048;
-    const bufferLength = this.analyser.frequencyBinCount;
-    this.timeDomainData = new Uint8Array(bufferLength);
-    this.frequencyData = new Uint8Array(bufferLength);
+    this.bufferLength = this.analyser.frequencyBinCount;
+    this.byteTimeDomainData = new Uint8Array(this.bufferLength);
+    this.byteFrequencyData = new Uint8Array(this.bufferLength);
+    this.floatTimeDomainData = new Float32Array(this.bufferLength);
+    this.floatFrequencyData = new Float32Array(this.bufferLength);
   }
+
+  updateByteTimeDomainData = () =>
+    this.analyser.getByteTimeDomainData(this.byteTimeDomainData);
+
+  updateByteFrequencyDataListener = () =>
+    this.analyser.getByteFrequencyData(this.byteFrequencyData);
+
+  updateFloatTimeDomainData = () =>
+    this.analyser.getFloatTimeDomainData(this.floatTimeDomainData);
+
+  updateFloatFrequencyData = () =>
+    this.analyser.getFloatFrequencyData(this.floatFrequencyData);
 
   initializeAudio = (audio: HTMLAudioElement) => {
     this.configureAudioElement(audio);

@@ -1,16 +1,22 @@
-<mat-toolbar>Basics</mat-toolbar>
+<mat-toolbar>Oscilloscope</mat-toolbar>
 <ng-container *ngIf="service.track$ | async as track">
-  <audio-player [track]="track"
-                [progress]="service.progress"
-                [duration]="service.duration"
-                [playing]="service.playing"
-                [muted]="service.muted"
-                [gain]="service.gain"
-                (initialized)="initializeAudio($event)"
-                (scan)="service.scanTrack($event)"
-                (togglePlay)="service.togglePlayback()"
-                (toggleMute)="service.toggleMute()"
-                (previous)="service.previousTrack()"
-                (next)="service.nextTrack()"
-                (volume)="service.updateVolume($event)"></audio-player>
+  <section fxLayout="column"
+           fxLayoutAlign="center center">
+    <canvas #visualizer
+            [style.width.px]="420"
+            [style.height.px]="120"></canvas>
+    <audio-player [track]="track"
+                  [progress]="service.progress"
+                  [duration]="service.duration"
+                  [playing]="service.playing"
+                  [muted]="service.muted"
+                  [gain]="service.gain"
+                  (initialized)="initializeAudio($event)"
+                  (scan)="service.scanTrack($event)"
+                  (togglePlay)="service.togglePlayback()"
+                  (toggleMute)="service.toggleMute()"
+                  (previous)="service.previousTrack()"
+                  (next)="service.nextTrack()"
+                  (volume)="service.updateVolume($event)"></audio-player>
+  </section>
 </ng-container>
