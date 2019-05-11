@@ -12,4 +12,5 @@ export * from './audio.service';
 export * from './sidepanel.service';
 export * from './snacker.service';
 export * from './theme.service';
+export * from './track.service';
 export * from './visualizer.service';

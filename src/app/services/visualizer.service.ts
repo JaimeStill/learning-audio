@@ -2,33 +2,62 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class VisualizerService {
-  canvas: CanvasRenderingContext2D;
-  width: number;
-  height: number;
+  private animationFrameId: number;
+  canvas: HTMLCanvasElement;
 
-  initialize = (canvas: CanvasRenderingContext2D, width: number, height: number) => {
-    this.canvas = canvas;
-    this.width = width;
-    this.height = height;
-  }
+  private updateCanvas = (
+    context: CanvasRenderingContext2D,
+    i: number,
+    x: number,
+    y: number
+  ) => i === 0 ?
+      context.moveTo(x, y) :
+      context.lineTo(x, y);
 
-  oscillator = (data: Float32Array, update: () => void) => {
+  spectrum = (data: Uint8Array, update: () => void) => {
+    this.clearAnimation();
+    let offset = 0;
+    const context = this.canvas.getContext('2d');
+    context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
     const draw = () => {
-      requestAnimationFrame(draw);
+      this.animationFrameId = requestAnimationFrame(draw);
       update();
-      this.canvas.clearRect(0, 0, this.width, this.height);
-      this.canvas.beginPath();
+      const slice = context.getImageData(0, offset, this.canvas.width, 1);
       for (let i = 0; i < data.length; i++) {
-        const x = i;
-        const y = (0.5 + data[i] / 2) * this.height;
-        this.updateCanvas(i, x, y);
+        slice.data[4 * i + 0] = data[i];
+        slice.data[4 * i + 1] = data[i];
+        slice.data[4 * i + 2] = data[i];
+        slice.data[4 * i + 3] = 255;
       }
-      this.canvas.stroke();
+      context.putImageData(slice, 0, offset);
+      offset += 1;
+      offset %= this.canvas.height;
     }
     draw();
   }
 
-  private updateCanvas = (i: number, x: number, y: number) => i === 0 ?
-    this.canvas.moveTo(x, y) :
-    this.canvas.lineTo(x, y);
+  oscillator = (data: Float32Array, update: () => void) => {
+    this.clearAnimation();
+    const context = this.canvas.getContext('2d');
+
+    const draw = () => {
+      this.animationFrameId = requestAnimationFrame(draw);
+      update();
+      context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      context.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = i;
+        const y = (0.5 + data[i] / 2) * this.canvas.height;
+        this.updateCanvas(context, i, x, y);
+      }
+      context.stroke();
+    }
+    draw();
+  }
+
+  initialize = (canvas: HTMLCanvasElement) => this.canvas = canvas;
+
+  clearAnimation = () =>
+    this.animationFrameId && cancelAnimationFrame(this.animationFrameId);
 }

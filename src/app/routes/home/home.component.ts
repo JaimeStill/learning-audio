@@ -6,37 +6,51 @@ import {
 
 import {
   AudioService,
+  TrackService,
   VisualizerService
 } from '../../services';
+
+import { Track } from 'src/app/models';
 
 @Component({
   selector: 'home-route',
   templateUrl: './home.component.html',
-  providers: [AudioService, VisualizerService]
+  providers: [
+    AudioService,
+    TrackService,
+    VisualizerService
+  ]
 })
 export class HomeComponent {
   constructor(
-    public service: AudioService,
-    private visService: VisualizerService
+    public audioService: AudioService,
+    public trackService: TrackService,
+    public visService: VisualizerService
   ) { }
 
   @ViewChild('visualizer')
   set visualizer(visualizer: ElementRef<HTMLCanvasElement>) {
     if (visualizer) {
-      this.visService.initialize(
-        visualizer.nativeElement.getContext('2d'),
-        visualizer.nativeElement.width,
-        visualizer.nativeElement.height
-      );
-
-      this.visService.oscillator(
-        this.service.floatTimeDomainData,
-        this.service.updateFloatTimeDomainData
-      );
+      this.visService.initialize(visualizer.nativeElement);
+      this.setOscillator();
     }
   }
 
-  initializeAudio = (player: HTMLAudioElement) => {
-    this.service.initializeAudio(player);
-  };
+  initializeAudio = (player: HTMLAudioElement, track: Track) => {
+    this.audioService.initializeAudio(player, track);
+    player.addEventListener('ended', () => this.next());
+  }
+
+  previous = () => this.audioService.setTrack(this.trackService.previousTrack());
+  next = () => this.audioService.setTrack(this.trackService.nextTrack());
+
+  setSpectrum = () => this.visService.spectrum(
+    this.audioService.byteFrequencyData,
+    this.audioService.updateByteFrequencyData
+  );
+
+  setOscillator = () => this.visService.oscillator(
+    this.audioService.floatTimeDomainData,
+    this.audioService.updateFloatTimeDomainData
+  );
 }

@@ -1,22 +1,28 @@
-<mat-toolbar>Oscilloscope</mat-toolbar>
-<ng-container *ngIf="service.track$ | async as track">
+<mat-toolbar>
+  <span>Visualization</span>
+  <button mat-button
+          (click)="setOscillator()">Oscillator</button>
+  <button mat-button
+          (click)="setSpectrum()">Spectrum Analyzer</button>
+</mat-toolbar>
+<ng-container *ngIf="trackService.track$ | async as track">
   <section fxLayout="column"
            fxLayoutAlign="center center">
     <canvas #visualizer
             [style.width.px]="420"
             [style.height.px]="120"></canvas>
     <audio-player [track]="track"
-                  [progress]="service.progress"
-                  [duration]="service.duration"
-                  [playing]="service.playing"
-                  [muted]="service.muted"
-                  [gain]="service.gain"
-                  (initialized)="initializeAudio($event)"
-                  (scan)="service.scanTrack($event)"
-                  (togglePlay)="service.togglePlayback()"
-                  (toggleMute)="service.toggleMute()"
-                  (previous)="service.previousTrack()"
-                  (next)="service.nextTrack()"
-                  (volume)="service.updateVolume($event)"></audio-player>
+                  [progress]="audioService.progress"
+                  [duration]="audioService.duration"
+                  [playing]="audioService.playing"
+                  [muted]="audioService.muted"
+                  [gain]="audioService.gain"
+                  (initialized)="initializeAudio($event, track)"
+                  (scan)="audioService.scanTrack($event)"
+                  (togglePlay)="audioService.togglePlayback()"
+                  (toggleMute)="audioService.toggleMute()"
+                  (previous)="previous()"
+                  (next)="next()"
+                  (volume)="audioService.updateVolume($event)"></audio-player>
   </section>
 </ng-container>
