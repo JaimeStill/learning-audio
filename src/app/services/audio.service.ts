@@ -7,10 +7,13 @@ export class AudioService {
   private imageSource = '../assets/images/';
   private audioSource = '../assets/audio/';
 
+  frequencyData: Uint8Array;
+  timeDomainData: Uint8Array;
   audio: HTMLAudioElement;
   context: AudioContext;
-  trackNode: MediaElementAudioSourceNode;
+  audioNode: AudioNode;
   gainNode: GainNode;
+  analyser: AnalyserNode;
   gain = 1;
   gainValue = 1;
   muted = false;
@@ -73,20 +76,44 @@ export class AudioService {
   progress = 0;
   duration = 0;
 
-  initializeAudio = (audio: HTMLAudioElement) => {
+  private configureAudioElement = (audio: HTMLAudioElement) => {
     this.audio = audio;
     this.audio.src = this.track.value.src;
     this.audio.addEventListener('durationchange', () => this.duration = this.audio.duration);
-    this.audio.addEventListener('timeupdate', () => this.progress = this.audio.currentTime);
-    this.context = new AudioContext();
-    this.trackNode = this.context.createMediaElementSource(this.audio);
-    this.gainNode = this.context.createGain();
-
-    this.trackNode
-      .connect(this.gainNode)
-      .connect(this.context.destination);
-
     this.audio.addEventListener('ended', () => this.nextTrack());
+
+    this.audio.addEventListener('timeupdate', () => {
+      this.progress = this.audio.currentTime;
+      this.analyser.getByteTimeDomainData(this.timeDomainData);
+      this.analyser.getByteFrequencyData(this.frequencyData);
+    });
+  }
+
+  private setupContextAndNodes = () => {
+    this.context = new AudioContext();
+    this.gainNode = this.context.createGain();
+    this.analyser = this.context.createAnalyser();
+  }
+
+  private connectDestination = () => {
+    const trackNode = this.context.createMediaElementSource(this.audio);
+    trackNode.connect(this.gainNode)
+             .connect(this.analyser)
+             .connect(this.context.destination);
+  }
+
+  private setupAnalyserSources = () => {
+    this.analyser.fftSize = 2048;
+    const bufferLength = this.analyser.frequencyBinCount;
+    this.timeDomainData = new Uint8Array(bufferLength);
+    this.frequencyData = new Uint8Array(bufferLength);
+  }
+
+  initializeAudio = (audio: HTMLAudioElement) => {
+    this.configureAudioElement(audio);
+    this.setupContextAndNodes();
+    this.connectDestination();
+    this.setupAnalyserSources();
   }
 
   togglePlayback = async () => {
